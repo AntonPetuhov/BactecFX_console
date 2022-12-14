@@ -1,0 +1,48 @@
+09.12.2022 16:16:04: Request 1000064295KP with culture test is NOT registered in CGM.
+09.12.2022 16:16:04: Request 1000064295KP does not contain culture tests
+09.12.2022 16:16:04: Impossible to insert data to CGM
+09.12.2022 16:16:04: File has been moved to Error folder.
+09.12.2022 16:16:04: 
+09.12.2022 16:20:29: Request 1000064295 with culture test is registered, test is not validated.
+09.12.2022 16:20:29: 1 culture test in the request.
+09.12.2022 16:20:29: Getting data from tables prov, plate, findings
+09.12.2022 16:20:29: Data from tables are received
+09.12.2022 16:20:29: Inserting results...
+09.12.2022 16:20:29: Result POSITIVE is inserted.
+09.12.2022 16:20:29: 
+09.12.2022 16:24:14: Request 1000064295 with culture test is registered, test is not validated.
+09.12.2022 16:24:14: 1 culture test in the request.
+09.12.2022 16:24:14: Getting data from tables prov, plate, findings
+09.12.2022 16:24:14: Data from tables are received
+09.12.2022 16:24:14: Inserting results...
+09.12.2022 16:24:14: Result POSITIVE is inserted.
+09.12.2022 16:24:14: 
+09.12.2022 16:24:59: Request 1000064295 with culture test is registered, test is not validated.
+09.12.2022 16:24:59: 1 culture test in the request.
+09.12.2022 16:24:59: Result is already exists.
+09.12.2022 16:24:59: 
+09.12.2022 16:38:02: Request 1000064295 with culture test is registered, test is not validated.
+09.12.2022 16:38:02: 1 culture test in the request.
+09.12.2022 16:38:02: Getting data from tables prov, plate, findings
+09.12.2022 16:38:02: Data from tables are received
+09.12.2022 16:38:02: Inserting results...
+09.12.2022 16:38:02: Result POSITIVE is inserted.
+09.12.2022 16:38:02: 
+09.12.2022 16:43:03: Request 1000064295 with culture test is registered, test is not validated.
+09.12.2022 16:43:03: 1 culture test in the request.
+09.12.2022 16:43:03: Getting data from tables prov, plate, findings
+09.12.2022 16:43:03: Data from tables are received
+09.12.2022 16:43:03: Inserting results...
+09.12.2022 16:43:03: Result POSITIVE is inserted.
+09.12.2022 16:43:03: 
+09.12.2022 16:45:41: Request 1000064295 with culture test is registered, test is not validated.
+09.12.2022 16:45:41: 1 culture test in the request.
+09.12.2022 16:45:41: Getting data from tables prov, plate, findings
+09.12.2022 16:45:41: Data from tables are received
+09.12.2022 16:45:41: Inserting results...
+09.12.2022 16:45:41: Result POSITIVE is inserted.
+09.12.2022 16:45:41: 
+09.12.2022 17:05:29: Request 1000064295 with culture test is registered, test is not validated.
+09.12.2022 17:05:29: 1 culture test in the request.
+09.12.2022 17:05:29: Result is already exists.
+09.12.2022 17:05:29: 

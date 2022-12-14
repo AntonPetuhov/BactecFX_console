@@ -1,0 +1,42 @@
+14.12.2022 13:13:04: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 13:13:04: 1 culture test in the request.
+14.12.2022 13:13:05: Getting data from tables prov, plate, findings
+14.12.2022 13:13:05: Data from tables are received
+14.12.2022 13:13:05: Inserting results...
+14.12.2022 13:13:05: Result POSITIVE is inserted.
+14.12.2022 13:13:05: 
+14.12.2022 13:21:25: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 13:21:25: 1 culture test in the request.
+14.12.2022 13:21:25: Result is already exists.
+14.12.2022 13:21:25: 
+14.12.2022 13:22:05: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 13:22:05: 1 culture test in the request.
+14.12.2022 13:22:05: Result is already exists.
+14.12.2022 13:22:05: 
+14.12.2022 14:04:47: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 14:04:47: 1 culture test in the request.
+14.12.2022 14:04:47: Result is already exists.
+14.12.2022 14:04:47: 
+14.12.2022 14:05:52: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 14:05:52: 1 culture test in the request.
+14.12.2022 14:05:52: Result is already exists.
+14.12.2022 14:05:52: 
+14.12.2022 14:12:11: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 14:12:11: 1 culture test in the request.
+14.12.2022 14:12:11: Result is already exists.
+14.12.2022 14:12:11: 
+14.12.2022 14:14:52: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 14:14:52: 1 culture test in the request.
+14.12.2022 14:14:52: Getting data from tables prov, plate, findings
+14.12.2022 14:14:52: Data from tables are received
+14.12.2022 14:14:52: Inserting results...
+14.12.2022 14:14:52: Result POSITIVE is inserted.
+14.12.2022 14:14:52: 
+14.12.2022 14:15:39: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 14:15:39: 1 culture test in the request.
+14.12.2022 14:15:39: Result is already exists.
+14.12.2022 14:15:39: 
+14.12.2022 14:17:58: Request 1000064306 with culture test is registered, test is not validated.
+14.12.2022 14:17:58: 1 culture test in the request.
+14.12.2022 14:17:58: Result is already exists.
+14.12.2022 14:17:58: 
