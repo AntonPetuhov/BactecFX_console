@@ -1530,6 +1530,7 @@ namespace BactecFX_console
             Console.WriteLine("Запущен бот " + botClient.GetMeAsync().Result.FirstName + " ID: " + botClient.GetMeAsync().Id);
 
             // Код ниже - для общения с ботом, получения информации о сообщениях и пользователях.
+            // Под нашу задачу на данный момент это не требуется, нужно просто отправлять оповещение в групповой чат
             /*
             var cts = new CancellationTokenSource();
             var cancellationToken = cts.Token;
