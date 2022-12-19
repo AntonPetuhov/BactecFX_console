@@ -763,13 +763,72 @@ namespace BactecFX_console
             #endregion
         }
 
+        // Подтверждение заявки в CGM
+        public static void ValidationCGM(string rid, int remid, int proid, string testcode, SqlConnection CGMConnection)
+        {
+            // начало транзакции
+            SqlTransaction RequestValidationTransaction = CGMConnection.BeginTransaction();
+
+            // Обновление таблицы bestall
+            SqlCommand UpdateBestall = CGMConnection.CreateCommand();
+            
+            UpdateBestall.CommandText = "UPDATE bestall " +
+                                            "SET met_kod = @testcode, bes_antal = '1', bes_svarstyp = 'R', bes_svarstat = 'G', ste_kod = NULL, " +
+                                            "bes_m_dttm = GETDATE(), sig_sign_msign = 'BACTEC', sig_sign_tsign = 'BACTEC', bes_t_dttm = GETDATE(), bes_utskrift = 'S', " +
+                                            "adr_alt_flag1 = NULL, adr_alt_flag2 = NULL, adr_alt_flag3 = NULL, bes_avreg = 'X', adr_kod_bagare = '41', " +
+                                            "bes_ursprsign = 'ADMIN', bes_chg_time = GETDATE(), bes_chg_user = 'dbo', bes_aktualitet = bes_aktualitet + 1  " +
+                                        "WHERE pro_id=@pro_id and rem_id=@rem_id and ana_analyskod=@testcode";
+            
+            UpdateBestall.Parameters.Add(new SqlParameter("@testcode", testcode));
+            UpdateBestall.Parameters.Add(new SqlParameter("@pro_id", proid));
+            UpdateBestall.Parameters.Add(new SqlParameter("@rem_id", remid));
+            //UpdateBestall.Parameters.Add(new SqlParameter("@test_code", testcode));
+
+            UpdateBestall.Transaction = RequestValidationTransaction;
+
+            // Обновление таблицы plate
+            SqlCommand UpdatePlateTable = CGMConnection.CreateCommand();
+            UpdatePlateTable.CommandText = "UPDATE plate " +
+                                            "SET sig_sign = 'BACTEC', pla_chg_user = 'dbo', pla_chg_time = GETDATE(), pla_chg_version = pla_chg_version + 1 " +
+                                           "where rem_id = @rem_id and pro_id = @pro_id and ana_analyskod = '@testcode'";
+            UpdatePlateTable.Parameters.Add(new SqlParameter("@rem_id", remid));
+            UpdatePlateTable.Parameters.Add(new SqlParameter("@pro_id", proid));
+            UpdatePlateTable.Parameters.Add(new SqlParameter("@testcode", testcode));
+
+            UpdatePlateTable.Transaction = RequestValidationTransaction;
+
+            // Инсерт в таблицу svarrid
+            SqlCommand InsertSvarrid = CGMConnection.CreateCommand();
+            InsertSvarrid.CommandText = "INSERT INTO svarrid ( rem_id, sri_status, sri_crt_user, sri_chg_user ) VALUES ( @rem_id, 'O', 'dbo', 'dbo' )";
+            InsertSvarrid.Parameters.Add(new SqlParameter("@rem_id", remid));
+
+            InsertSvarrid.Transaction = RequestValidationTransaction;
+
+            // выполнение скриптов
+            try
+            {
+                UpdateBestall.ExecuteNonQuery();
+                UpdatePlateTable.ExecuteNonQuery();
+                InsertSvarrid.ExecuteNonQuery();
+
+                RequestValidationTransaction.Commit();
+                FileResultLog("Result was approved by BactecFX analyzer.");
+            }
+            catch(Exception ex)
+            {
+                RequestValidationTransaction.Rollback();
+                FileResultLog($"{ex}");
+                FileResultLog($"Result was not approved.");
+            }
+        }
+
         // Запись результатов в CGM
         public static void InsertResultToCGM(string InsertRid, string InsertResult)
         {
             int ResultForInsert = ResultInterpretation(InsertResult); // интерпретация результата
             //bool RIDExist = false;
             bool IsCultureTest = false; // флаг посевного теста
-            FileToErrorPath = false;        // флаг 
+            FileToErrorPath = false;    // флаг 
 
             try
             {
@@ -1188,7 +1247,7 @@ namespace BactecFX_console
 
                                     // запись в лог
                                     FileResultLog($"Result {InsertResult} is inserted.");
-                                    FileResultLog($"");
+                                    //FileResultLog($"");
                                 }
                                 catch(Exception ex)
                                 {
@@ -1196,17 +1255,23 @@ namespace BactecFX_console
                                     //Console.WriteLine(ex);
                                     FileResultLog($"{ex}");
                                     FileResultLog($"Result {InsertResult} is NOT inserted!");
-                                    FileResultLog($"");
+                                    //FileResultLog($"");
                                 }
                             }
                             // Если микроорганизм уже есть, то ничего не записываем
                             else
                             {
                                 FileResultLog("Result is already exists.");
-                                FileResultLog($"");
+                                //FileResultLog($"");
                             }
-                        }
 
+                            // Если результат NEGATIVE - валидируем результат
+                            if(InsertResult == "NEGATIVE")
+                            {
+                                ValidationCGM(InsertRid, rem_id, pro_id, TestCode, CGMconnection);
+                            }
+                            FileResultLog($"");
+                        }
                     }
                     else
                     {
@@ -1309,6 +1374,7 @@ namespace BactecFX_console
                         // Запись результатов в CGM
                         InsertResultToCGM(RID, Result);
 
+
                         #region Отправка сообщения в бот
 
                         if (Result == "POSITIVE")
@@ -1353,7 +1419,7 @@ namespace BactecFX_console
 
                             foreach (var key in appSettings.AllKeys)
                             {
-                                SendNotification(botClient, appSettings[key], Request, PatientId, ClientCode, FIO);
+                               // SendNotification(botClient, appSettings[key], Request, PatientId, ClientCode, FIO);
                             }
                         }
                       
@@ -1527,7 +1593,7 @@ namespace BactecFX_console
             // токен бота
             //var botClient = new TelegramBotClient("5713460548:AAHAem3It_bVQQrMcRvX2QNy7n5m_IUqLMY");
 
-            Console.WriteLine("Запущен бот " + botClient.GetMeAsync().Result.FirstName + " ID: " + botClient.GetMeAsync().Id);
+            Console.WriteLine("Запущен бот " + botClient.GetMeAsync().Result.FirstName);
 
             // Код ниже - для общения с ботом, получения информации о сообщениях и пользователях.
             // Под нашу задачу на данный момент это не требуется, нужно просто отправлять оповещение в групповой чат
@@ -1548,7 +1614,7 @@ namespace BactecFX_console
                                      cancellationToken);
             */
 
-            #endregion
+#endregion
 
             //Поток, который следит за другими потоками
             Thread ManagerThread = new Thread(CheckThreads);
