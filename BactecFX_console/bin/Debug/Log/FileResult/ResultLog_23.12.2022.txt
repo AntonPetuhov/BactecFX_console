@@ -1,0 +1,40 @@
+23.12.2022 16:34:33: Request 1000064331 with culture test is registered, test is not validated.
+23.12.2022 16:34:33: 1 culture test in the request.
+23.12.2022 16:34:33: Getting data from tables prov, plate, findings
+23.12.2022 16:34:33: Data from tables are received
+23.12.2022 16:34:33: Inserting results...
+23.12.2022 16:34:33: Result POSITIVE is inserted.
+23.12.2022 16:34:34: System.InvalidOperationException: Существует назначенный этой команде Command открытый DataReader, который требуется предварительно закрыть.
+   в System.Data.SqlClient.SqlInternalConnectionTds.ValidateConnectionForExecute(SqlCommand command)
+   в System.Data.SqlClient.SqlConnection.ValidateConnectionForExecute(String method, SqlCommand command)
+   в System.Data.SqlClient.SqlCommand.ValidateCommand(String method, Boolean async)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method, TaskCompletionSource`1 completion, Int32 timeout, Task& task, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry)
+   в System.Data.SqlClient.SqlCommand.RunExecuteReader(CommandBehavior cmdBehavior, RunBehavior runBehavior, Boolean returnStream, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader(CommandBehavior behavior, String method)
+   в System.Data.SqlClient.SqlCommand.ExecuteReader()
+   в BactecFX_console.Program.PreliminaryReportCGM(String rid, String pid, Int32 remid, Int32 proid, String testcode, SqlConnection CGMConnection) в C:\Users\anton.petuhov\source\repos\BactecFX_console\BactecFX_console\Program.cs:строка 855
+   в BactecFX_console.Program.InsertResultToCGM(String InsertRid, String InsertResult) в C:\Users\anton.petuhov\source\repos\BactecFX_console\BactecFX_console\Program.cs:строка 1405
+23.12.2022 16:45:12: Request 1000064332 with culture test is registered, test is not validated.
+23.12.2022 16:45:12: 1 culture test in the request.
+23.12.2022 16:45:12: Getting data from tables prov, plate, findings
+23.12.2022 16:45:12: Data from tables are received
+23.12.2022 16:45:12: Inserting results...
+23.12.2022 16:45:12: Result POSITIVE is inserted.
+23.12.2022 16:45:12: Preliminary report was sent to Request source.
+23.12.2022 16:45:12: 
+23.12.2022 16:54:18: Request 1000064333 with culture test is registered, test is not validated.
+23.12.2022 16:54:18: 1 culture test in the request.
+23.12.2022 16:54:18: Getting data from tables prov, plate, findings
+23.12.2022 16:54:18: Data from tables are received
+23.12.2022 16:54:18: Inserting results...
+23.12.2022 16:54:18: Result POSITIVE is inserted.
+23.12.2022 16:54:18: Preliminary report was sent to Request source.
+23.12.2022 16:54:18: 
+23.12.2022 17:01:10: Request 1000064334 with culture test is registered, test is not validated.
+23.12.2022 17:01:10: 1 culture test in the request.
+23.12.2022 17:01:10: Getting data from tables prov, plate, findings
+23.12.2022 17:01:10: Data from tables are received
+23.12.2022 17:01:10: Inserting results...
+23.12.2022 17:01:10: Result POSITIVE is inserted.
+23.12.2022 17:01:10: Preliminary report was sent to Request source.
+23.12.2022 17:01:10: 

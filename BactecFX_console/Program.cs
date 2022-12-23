@@ -822,6 +822,140 @@ namespace BactecFX_console
             }
         }
 
+        // Предварительный отчет в CGM
+        public static void PreliminaryReportCGM(string rid, string pid, int remid, int proid, string testcode, SqlConnection CGMConnection)
+        {
+            // формируем guid
+            Guid guid = Guid.NewGuid();
+            //Console.WriteLine(guid);
+            // получение данных для последующих инсертов
+            int exs_id = 0;
+            int bes_id = 0;
+            string adr_kod = ""; // код отделения
+
+            // данные из таблицы identitet
+            SqlCommand GetFromIdentitet = new SqlCommand("SELECT id_senast FROM identitet WHERE id_namn = 'exs_id'", CGMConnection);
+            SqlDataReader IdentitetReader = GetFromIdentitet.ExecuteReader();
+
+            if (IdentitetReader.HasRows)
+            {
+                while (IdentitetReader.Read())
+                {
+                    exs_id = IdentitetReader.GetInt32(0);
+                    //Console.WriteLine(exs_id);
+                }
+            }
+            IdentitetReader.Close();
+            // данные из serchview
+            SqlCommand GetFromSearchV = new SqlCommand("SELECT s.adr_kod_svar1, s.bes_id FROM searchview s " +
+                                                       "WHERE s.rem_rid = @rid AND s.rem_id = @rem_id AND pro_id = @pro_id AND s.ana_analyskod = @testcode", CGMConnection);
+            GetFromSearchV.Parameters.Add(new SqlParameter("@rid", rid));
+            GetFromSearchV.Parameters.Add(new SqlParameter("@rem_id", remid));
+            GetFromSearchV.Parameters.Add(new SqlParameter("@pro_id", proid));
+            GetFromSearchV.Parameters.Add(new SqlParameter("@testcode", testcode));
+            SqlDataReader SearchviewReader = GetFromSearchV.ExecuteReader();
+
+            if (SearchviewReader.HasRows)
+            {
+                while (SearchviewReader.Read())
+                {
+                    adr_kod = SearchviewReader.GetString(0);
+                    bes_id = SearchviewReader.GetInt32(1);
+                    //Console.WriteLine(adr_kod);
+                    //Console.WriteLine(bes_id);
+                }
+            }
+            SearchviewReader.Close();
+
+            // начало транзакции
+            SqlTransaction PreliminaryReportTransaction = CGMConnection.BeginTransaction();
+
+            // Обновление bestall
+            SqlCommand UpdateBestall = CGMConnection.CreateCommand();
+            UpdateBestall.CommandText = "UPDATE bestall " +
+                                        "SET adr_kod_bagare = '41', bes_chg_time = GETDATE(), bes_chg_user = 'ADMIN', bes_aktualitet = bes_aktualitet + 1, bes_send_prel_reply = '2', " +
+                                        "bes_send_prel_reply_auto = 'O', sig_sign_sent_prel_reply = 'BACTEC', bes_ordered_prel_reply_dttm = GETDATE() " +
+                                        "where pro_id = @pro_id and rem_id = @rem_id and ana_analyskod = @testcode";
+
+            UpdateBestall.Parameters.Add(new SqlParameter("@pro_id", proid));
+            UpdateBestall.Parameters.Add(new SqlParameter("@rem_id", remid));
+            UpdateBestall.Parameters.Add(new SqlParameter("@testcode", testcode));
+            UpdateBestall.Transaction = PreliminaryReportTransaction;
+
+            // Обновление identitet
+            SqlCommand UpdateIdentitet = CGMConnection.CreateCommand();
+            UpdateIdentitet.CommandText = "UPDATE identitet " +
+                                          "SET id_chg_user = 'SCRIPT', id_chg_time = GETDATE(), id_senast = id_senast + 1, id_aktualitet = id_aktualitet + 1 " +
+                                          "WHERE(id_senast + 1 <= id_tom or id_tom IS null) AND id_namn = 'exs_id'";
+            UpdateIdentitet.Transaction = PreliminaryReportTransaction;
+
+            // INSERT svar
+            SqlCommand InsertSvar = CGMConnection.CreateCommand();
+            InsertSvar.CommandText = "INSERT INTO dbo.svar (" +
+                                        "adr_kod, exs_id, pop_pid, rem_id, rem_rid, sva_aktualitet, sva_andr_tid, sva_chg_time, sva_chg_user, " +
+                                        "sva_crt_time, sva_crt_user, sva_flag, sva_flag_changed, sva_flagnr, sva_id, sva_prel_reply_guid, sva_svarstyp, sva_use_redirection ) " +
+                                     "VALUES(" +
+                                        "@adr_kod, @exs_id, @pid, @rem_id, @rid, 0, GETDATE(), GETDATE(), 'dbo', " +
+                                        "GETDATE(), 'dbo', 'X X X  X', NULL, NULL, @exs_id, @guid, 'P', NULL)";
+            InsertSvar.Parameters.Add(new SqlParameter("@adr_kod", adr_kod));
+            InsertSvar.Parameters.Add(new SqlParameter("@exs_id", exs_id));
+            InsertSvar.Parameters.Add(new SqlParameter("@pid", pid));
+            InsertSvar.Parameters.Add(new SqlParameter("@rem_id", remid));
+            InsertSvar.Parameters.Add(new SqlParameter("@rid", rid));
+            InsertSvar.Parameters.Add(new SqlParameter("@guid", guid));
+            InsertSvar.Transaction = PreliminaryReportTransaction;
+
+            // INSERT extrasvar
+            SqlCommand InsertExtrasvar = CGMConnection.CreateCommand();
+            InsertExtrasvar.CommandText = "INSERT INTO dbo.extrasvar ( " +
+                                            "adr_kod, adr_kod_exs, apro_id, arem_id, exs_crt_time, exs_crt_user, exs_id, exs_provdat_from, " +
+                                            "exs_provdat_tom, exs_separate_printer, exs_svarsatt, inr_id, phy_id, pop_pid, pro_id, rem_id ) " +
+                                          "VALUES(@adr_kod, '41', NULL, NULL, GETDATE(), 'ADMIN', @exs_id, NULL, NULL, 0, 'D', NULL, NULL, @pid, NULL, @rem_id)";
+            InsertExtrasvar.Parameters.Add(new SqlParameter("@adr_kod", adr_kod));
+            InsertExtrasvar.Parameters.Add(new SqlParameter("@exs_id", exs_id));
+            InsertExtrasvar.Parameters.Add(new SqlParameter("@pid", pid));
+            InsertExtrasvar.Parameters.Add(new SqlParameter("@rem_id", remid));
+            InsertExtrasvar.Transaction = PreliminaryReportTransaction;
+
+            // INSERT extraana
+            SqlCommand InsertExtraana = CGMConnection.CreateCommand();
+            InsertExtraana.CommandText = "INSERT INTO dbo.extraana ( ana_analyskod, apro_id, arem_id, exa_crt_time, exa_crt_user, exs_id, pro_id, rem_id ) " +
+                                         "VALUES ( @testcode, NULL, NULL, GETDATE(), 'ADMIN', @exs_id, @pro_id, @rem_id )";
+            InsertExtraana.Parameters.Add(new SqlParameter("@testcode", testcode));
+            InsertExtraana.Parameters.Add(new SqlParameter("@exs_id", exs_id));
+            InsertExtraana.Parameters.Add(new SqlParameter("@pro_id", proid));
+            InsertExtraana.Parameters.Add(new SqlParameter("@rem_id", remid));
+            InsertExtraana.Transaction = PreliminaryReportTransaction;
+
+            // INSERT testorderforpreliminaryreply
+            SqlCommand InsertTestOrderForPreliminaryReply = CGMConnection.CreateCommand();
+            InsertTestOrderForPreliminaryReply.CommandText = "INSERT INTO dbo.testorderforpreliminaryreply ( bes_id, prel_reply_guid, topr_crt_time, topr_crt_user ) " +
+                                                             "VALUES ( @bes_id, @guid, GETDATE(), 'ADMIN' )";
+            InsertTestOrderForPreliminaryReply.Parameters.Add(new SqlParameter("@bes_id", bes_id));
+            InsertTestOrderForPreliminaryReply.Parameters.Add(new SqlParameter("@guid", guid));
+            InsertTestOrderForPreliminaryReply.Transaction = PreliminaryReportTransaction;
+
+            // выполнение скриптов
+            try
+            {
+                UpdateBestall.ExecuteNonQuery();
+                UpdateIdentitet.ExecuteNonQuery();
+                InsertSvar.ExecuteNonQuery();
+                InsertExtrasvar.ExecuteNonQuery();
+                InsertExtraana.ExecuteNonQuery();
+                InsertTestOrderForPreliminaryReply.ExecuteNonQuery();
+
+                PreliminaryReportTransaction.Commit();
+                FileResultLog("Preliminary report was sent to Request source.");
+            }
+            catch (Exception ex)
+            {
+                PreliminaryReportTransaction.Rollback();
+                FileResultLog($"{ex}");
+                FileResultLog($"Result was not approved.");
+            }
+        }
+
         // Запись результатов в CGM
         public static void InsertResultToCGM(string InsertRid, string InsertResult)
         {
@@ -964,8 +1098,7 @@ namespace BactecFX_console
                         int pro_id = 0;
                         string TestCode = "";
                         string Lid = "";
-
-                        //string pid = "";
+                        string pid = "";
 
                         SqlCommand GetData = new SqlCommand(
                             "SELECT s.rem_id, s.pro_id, s.ana_analyskod, s.pro_provid, s.pop_pid FROM LABETT..searchview s " +
@@ -982,7 +1115,7 @@ namespace BactecFX_console
                                 pro_id = DataReader.GetInt32(1);
                                 TestCode = DataReader.GetString(2);
                                 Lid = DataReader.GetString(3);
-                                //pid = DataReader.GetString(4);
+                                pid = DataReader.GetString(4);
                             }
                         }
                         DataReader.Close();
@@ -1223,7 +1356,7 @@ namespace BactecFX_console
                                     "VALUES ( " +
                                     "@rem_id, @pro_id, @test_code, 'BT_BLOOD', @fin_id_count, " +
                                     "@fyt_id, @fin_sort_order, NULL, NULL, NULL, " +
-                                    "NULL, 'BACTEC', 'X', '1', 'SCRIPT', " +
+                                    "NULL, 'BACTEC', 'X', '1', 'BACTEC', " +
                                     "GETDATE(), @fin_number, 'dbo', GETDATE(), 'dbo', " +
                                     "GETDATE(), '0', '41' )";
                                 InsertMO.Parameters.Add(new SqlParameter("@rem_id", rem_id));
@@ -1265,10 +1398,14 @@ namespace BactecFX_console
                                 //FileResultLog($"");
                             }
 
-                            // Если результат NEGATIVE - валидируем результат
+                            // Если результат NEGATIVE - валидируем результат, если POSITIVE -  предварительный отчет
                             if(InsertResult == "NEGATIVE")
                             {
                                 ValidationCGM(InsertRid, rem_id, pro_id, TestCode, CGMconnection);
+                            }
+                            else if (InsertResult == "POSITIVE")
+                            {
+                                PreliminaryReportCGM(InsertRid, pid, rem_id, pro_id, TestCode, CGMconnection);
                             }
                             FileResultLog($"");
                         }
@@ -1374,7 +1511,7 @@ namespace BactecFX_console
                         // Запись результатов в CGM
                         InsertResultToCGM(RID, Result);
 
-
+                        /*
                         #region Отправка сообщения в бот
 
                         if (Result == "POSITIVE")
@@ -1394,7 +1531,7 @@ namespace BactecFX_console
                             {
                                 CGMconnection.Open();
 
-                                SqlCommand GetNotificationData = new SqlCommand("SELECT r.rem_rid, r.pop_pid, r.adr_kod_regvid, p.pop_enamn + ' ' + p.pop_fnamn AS FIO " +
+                                SqlCommand GetNotificationData = new SqlCommand("SELECT r.rem_rid, r.pop_pid, r.adr_kod_svar1, p.pop_enamn + ' ' + p.pop_fnamn AS FIO " +
                                                                                 "FROM LABETT..remiss r INNER JOIN labett..pop p ON r.pop_pid = p.pop_pid " +
                                                                                 "WHERE r.rem_rid = @rid", CGMconnection);
                                 GetNotificationData.Parameters.Add(new SqlParameter("@rid", RID));
@@ -1424,6 +1561,7 @@ namespace BactecFX_console
                         }
                       
                         #endregion
+                        */
 
                         string FileName = file.Substring(AnalyzerResultPath.Length + 1);
 
