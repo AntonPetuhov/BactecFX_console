@@ -842,6 +842,7 @@ namespace BactecFX_console
                 while (IdentitetReader.Read())
                 {
                     exs_id = IdentitetReader.GetInt32(0);
+                    exs_id = exs_id + 1;
                     //Console.WriteLine(exs_id);
                 }
             }
@@ -952,7 +953,7 @@ namespace BactecFX_console
             {
                 PreliminaryReportTransaction.Rollback();
                 FileResultLog($"{ex}");
-                FileResultLog($"Result was not approved.");
+                FileResultLog($"Preliminary report was NOT sent to Request source.");
             }
         }
 
